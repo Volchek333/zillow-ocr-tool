@@ -1,6 +1,17 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2822
-\cocoatextscaling0\cocoaplatform0{\fonttbl}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-}
+# utils/ocr_extract.py
+from PIL import Image
+import pytesseract
+import re
+
+def extract_info_from_image(image: Image.Image):
+    text = pytesseract.image_to_string(image)
+
+    phone_pattern = re.search(r'(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})', text)
+    name_pattern = re.search(r'Agent[:\-]?\s*(.+)', text, re.IGNORECASE)
+    address_pattern = re.search(r'\d{3,} .+, [A-Z]{2} \d{5}', text)
+
+    return {
+        "Agent Name": name_pattern.group(1).strip() if name_pattern else "N/A",
+        "Agent Phone Number": phone_pattern.group(1).strip() if phone_pattern else "N/A",
+        "Address": address_pattern.group(0).strip() if address_pattern else "N/A"
+    }
